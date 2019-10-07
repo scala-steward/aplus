@@ -2,8 +2,10 @@ package models
 
 import java.util.UUID
 
-import extentions.{Hash, UUIDHelper}
+import extentions.{Hash, Time, UUIDHelper}
 import org.joda.time.{DateTime, Days}
+
+import scala.util.control.NonFatal
 
 case class User(id: UUID,
                 key: String,
@@ -26,6 +28,7 @@ case class User(id: UUID,
                 cguAcceptationDate: Option[DateTime] = None,
                 newsletterAcceptationDate: Option[DateTime] = None) extends AgeModel {
   def nameWithQualite = s"$name ( $qualite )"
+
 }
 
 object User {
@@ -46,4 +49,25 @@ object User {
     User(UUIDHelper.namedFrom("pierre"), Hash.sha256(s"pierre -disabled"), "Pierre MOMBOISSE (disabled)", "Aide A+", "pierre.momboisse@beta.gouv.fr", false, false, false, List(), date, false, "75056", false, disabled = true),
     User(UUIDHelper.namedFrom("dominique"), Hash.sha256(s"dominique - disabled"), "Dominique LEQUEPEYS (disabled)", "Aide A+", "dominique.lequepeys@beta.gouv.fr", false, false, false, List(), date, false, "75056", false, disabled = true),
   )
+
+  // "Id", "Nom", "Qualité", "Email", "Création","Aidant","Instructeur","Responsable","Expert","Admin","Actif","Commune INSEE", "Territoires","Groupes", "CGU", "Newsletter")
+  def fromMap(values: Map[String,String]): Option[User] = {
+    val id = values.get("Id").flatMap(UUIDHelper.fromString).getOrElse(UUIDHelper.randomUUID)
+    val key = "key"
+    for {name <- values.get("Nom")
+         email <- values.get("Email")
+         qualite <- values.get("Qualité")
+         helper = values.get("Aidant").contains("Aidant")
+         instructor = values.get("Instructeur").contains("Instructeur")
+         admin = false
+         areas = List()
+         creationDate = Time.now()
+         hasAcceptedCharte = false
+         communeCode = values.getOrElse("Commune INSEE", "000")
+         groupAdmin = values.get("Responsable").contains("Responsable")
+         disabled = values.get("Actif").contains("Désactivé")
+         expert = values.get("Expert").contains("Expert")
+         } yield User(id, key, name, qualite, email, helper, instructor, admin, areas, creationDate,
+      hasAcceptedCharte, communeCode, groupAdmin, disabled, expert = expert)
+  }
 }

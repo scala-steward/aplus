@@ -30,12 +30,14 @@ GET     /stats                       controllers.ApplicationController.stats
 GET    /login                        controllers.LoginController.login
 POST   /login                        controllers.LoginController.login
 GET    /login/disconnect             controllers.LoginController.disconnect
-GET    /validation-connexion             controllers.LoginController.redirect
+GET    /validation-connexion         controllers.LoginController.redirect
 
 
 # Users
 GET     /users                       controllers.UserController.all
 GET     /utilisateurs                controllers.UserController.allNew
+GET     /importation/utilisateurs    controllers.UserController.importUsers
+POST    /importation/utilisateurs    controllers.UserController.importUsersPost
 GET     /users.csv                   controllers.UserController.allCSV
 GET     /users/:userId               controllers.UserController.editUser(userId: java.util.UUID)
 POST    /users/:userId               controllers.UserController.editUserPost(userId: java.util.UUID)

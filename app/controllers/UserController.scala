@@ -16,6 +16,10 @@ import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.mvc.{Call, InjectedController}
 import services.{ApplicationService, EventService, NotificationService, UserGroupService, UserService}
+import com.github.tototoshi.csv._
+
+import scala.io.Source
+
 
 @Singleton
 class UserController @Inject()(loginAction: LoginAction,
@@ -384,6 +388,44 @@ class UserController @Inject()(loginAction: LoginAction,
       val events = eventService.all(limit, userId)
       eventService.info("EVENTS_SHOWED", s"Affiche les événements")
       Ok(views.html.allEvents(request.currentUser, request.currentArea)(events, limit))
+    }
+  }
+
+  val applicationsChangesForm = Form(
+    "csv" -> nonEmptyText
+  )
+  
+  def importUsers = loginAction { implicit request =>
+    if (request.currentUser.admin == false) {
+      eventService.warn("IMPORT_USER_UNAUTHORIZED", s"Accès non autorisé pour importer les utilisateurs")
+      Unauthorized("Vous n'avez pas le droit de faire ça")
+    } else {
+      Ok(views.html.importUsers(request.currentUser, request.currentArea)(applicationsChangesForm))
+    }
+  }
+
+  def readCSV(csvText: String) = {
+    implicit object SemiConFormat extends DefaultCSVFormat {
+      override val delimiter = ';'
+    }
+    val reader = CSVReader.open(Source.fromString(csvText))
+    reader.allWithHeaders().flatMap(User.fromMap)
+  }
+
+  def importUsersPost = loginAction { implicit request =>
+    if (request.currentUser.admin == false) {
+      eventService.warn("IMPORT_USER_UNAUTHORIZED", s"Accès non autorisé pour importer les utilisateurs")
+      Unauthorized("Vous n'avez pas le droit de faire ça")
+    } else {
+      applicationsChangesForm.bindFromRequest.fold(
+        formWithErrors => {
+          BadRequest(views.html.importUsers(request.currentUser, request.currentArea)(formWithErrors))
+        },
+        csvText => {
+          val usersParsed = readCSV(csvText)
+          val usersFormFilled = usersForm(request.currentArea).fill(usersParsed)
+          Ok(views.html.editUsers(request.currentUser, request.currentArea)(usersFormFilled, 0, routes.UserController.addPost(UUID.randomUUID())))
+        })
     }
   }
 }
