@@ -13,7 +13,7 @@
     "ts-polyfill": "3.8.2"
   },
   "devDependencies": {
-    "@types/tabulator-tables": "4.8.0",
+    "@types/tabulator-tables": "4.9.2",
     "css-loader": "5.2.4",
     "mini-css-extract-plugin": "1.6.0",
     "rimraf": "3.0.2",
