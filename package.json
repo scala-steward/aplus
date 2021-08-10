@@ -10,7 +10,7 @@
   "dependencies": {
     "autolinker": "3.14.3",
     "dialog-polyfill": "0.5.6",
-    "slim-select": "1.26.2",
+    "slim-select": "1.27.0",
     "tabulator-tables": "4.9.3",
     "ts-polyfill": "3.8.2",
     "unfetch": "4.2.0",
